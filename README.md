@@ -101,6 +101,8 @@ information on what to include when reporting a bug.
 
 - Added `glfwGetKeyScancode` function that allows retrieving platform depen-
   dent scancodes for keys (#830)
+- Added `glfwSetWindowMaximizeCallback` and `GLFWwindowmaximizefun` for
+  receiving window maximization events (#778)
 - Bugfix: Calling `glfwMaximizeWindow` on a full screen window was not ignored
 
 
