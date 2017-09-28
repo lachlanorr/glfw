@@ -1,6 +1,6 @@
 //========================================================================
 // Context sharing test program
-// Copyright (c) Camilla Berglund <elmindreda@glfw.org>
+// Copyright (c) Camilla Löwy <elmindreda@glfw.org>
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -38,6 +38,7 @@
 #include "linmath.h"
 
 static const char* vertex_shader_text =
+"#version 110\n"
 "uniform mat4 MVP;\n"
 "attribute vec2 vPos;\n"
 "varying vec2 texcoord;\n"
@@ -48,6 +49,7 @@ static const char* vertex_shader_text =
 "}\n";
 
 static const char* fragment_shader_text =
+"#version 110\n"
 "uniform sampler2D texture;\n"
 "uniform vec3 color;\n"
 "varying vec2 texcoord;\n"
@@ -132,10 +134,10 @@ int main(int argc, char** argv)
     // pointers should be re-usable between them
     gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
 
-    if (GLAD_GL_ARB_debug_output)
+    if (GLAD_GL_KHR_debug)
     {
-        glDebugMessageCallbackARB(debug_callback, NULL);
-        glDebugMessageControlARB(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+        glDebugMessageCallback(debug_callback, NULL);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
     }
 
     // Create the OpenGL objects inside the first context, created above
