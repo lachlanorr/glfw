@@ -1,5 +1,5 @@
 //========================================================================
-// UTF-8 window title test
+// Window opacity test program
 // Copyright (c) Camilla Löwy <elmindreda@glfw.org>
 //
 // This software is provided 'as-is', without any express or implied
@@ -22,14 +22,22 @@
 //    distribution.
 //
 //========================================================================
-//
-// This test sets a UTF-8 window title
-//
-//========================================================================
 
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+
+#define NK_IMPLEMENTATION
+#define NK_INCLUDE_FIXED_TYPES
+#define NK_INCLUDE_FONT_BAKING
+#define NK_INCLUDE_DEFAULT_FONT
+#define NK_INCLUDE_DEFAULT_ALLOCATOR
+#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+#define NK_INCLUDE_STANDARD_VARARGS
+#include <nuklear.h>
+
+#define NK_GLFW_GL2_IMPLEMENTATION
+#include <nuklear_glfw_gl2.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,16 +47,20 @@ static void error_callback(int error, const char* description)
     fprintf(stderr, "Error: %s\n", description);
 }
 
-int main(void)
+int main(int argc, char** argv)
 {
     GLFWwindow* window;
+    struct nk_context* nk;
+    struct nk_font_atlas* atlas;
 
     glfwSetErrorCallback(error_callback);
 
     if (!glfwInit())
         exit(EXIT_FAILURE);
 
-    window = glfwCreateWindow(400, 400, "English 日本語 русский язык 官話", NULL, NULL);
+    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
+
+    window = glfwCreateWindow(400, 400, "Opacity", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -59,13 +71,37 @@ int main(void)
     gladLoadGL(glfwGetProcAddress);
     glfwSwapInterval(1);
 
+    nk = nk_glfw3_init(window, NK_GLFW3_INSTALL_CALLBACKS);
+    nk_glfw3_font_stash_begin(&atlas);
+    nk_glfw3_font_stash_end();
+
     while (!glfwWindowShouldClose(window))
     {
+        int width, height;
+        struct nk_rect area;
+
+        glfwGetWindowSize(window, &width, &height);
+        area = nk_rect(0.f, 0.f, (float) width, (float) height);
+
         glClear(GL_COLOR_BUFFER_BIT);
+        nk_glfw3_new_frame();
+        if (nk_begin(nk, "", area, 0))
+        {
+            float opacity = glfwGetWindowOpacity(window);
+            nk_layout_row_dynamic(nk, 30, 2);
+            if (nk_slider_float(nk, 0.f, &opacity, 1.f, 0.001f))
+                glfwSetWindowOpacity(window, opacity);
+            nk_labelf(nk, NK_TEXT_LEFT, "%0.3f", opacity);
+        }
+
+        nk_end(nk);
+        nk_glfw3_render(NK_ANTI_ALIASING_ON);
+
         glfwSwapBuffers(window);
-        glfwWaitEvents();
+        glfwWaitEventsTimeout(1.0);
     }
 
+    nk_glfw3_shutdown();
     glfwTerminate();
     exit(EXIT_SUCCESS);
 }
